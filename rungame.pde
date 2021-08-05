@@ -41,9 +41,10 @@ float lastAddTime = 0;
 int minGapHeight = 170;
 int maxGapHeight = 360;
 
-
 int wallWidth = 150;
 color wallColors = color(44, 62, 80);
+color starColor = color(255,255,51);
+color backgroundColor = color(236, 240, 241);
 // This arraylist stores data of the gaps between the walls. Actuals walls are drawn accordingly.
 // [gapWallX, gapWallY, gapWallWidth, gapWallHeight, scored]
 ArrayList<int[]> walls = new ArrayList<int[]>();
@@ -53,8 +54,8 @@ ArrayList<int[]> coordinates = new ArrayList<int[]>();
 /********* SETUP BLOCK *********/
 
 void setup() {
-  //frameRate(60);
-  size(600, 500);
+  frameRate(60);
+  size(500, 500);
   // set the initial coordinates of the ball
   ballX=width/4;
   ballY=height/5;
@@ -79,7 +80,7 @@ void draw() {
 /********* SCREEN CONTENTS *********/
 
 void initScreen() {
-  background(236, 240, 241);
+  background(backgroundColor);
   textAlign(CENTER);
   fill(52, 73, 94);
   textSize(70);
@@ -176,13 +177,16 @@ void coinDrawer(int index) {
   int[] wall = walls.get(index);
   
   // x, y, size
-  int[] position = { wall[0] + wallWidth/2, wall[3] - 50,  wallWidth/3};
+  int[] position = { wall[0] + wallWidth/2, wall[3] - 40,  wallWidth/3};
   
   //ellipse(wall[0] + wallWidth/2 , wall[3] - 40, wallWidth / 3, wallWidth / 3);
-  star(position[0], position[1], 8, 25, 5); 
-  coordinates.add(position);
-  println(position[0] + "," + position[1] + "    " + (int)ballX + "," + (int)ballY);
+  if(!(position[0] > width) || !(position[1] > height) || !(position[0] < 0)) {
+    star(position[0], position[1], 8, 25, 5, starColor); 
+    coordinates.add(position);
+    //println(position[0] + "," + position[1] + "    " + (int)ballX + "," + (int)ballY);
+  }
 }
+ //<>//
 
 void drawHealthBar() {
   noStroke();
@@ -201,8 +205,7 @@ void drawHealthBar() {
 }
 
 void wallDrawer(int index) {
-  PImage img = loadImage("images/wall.PNG");
-  
+  PImage img = loadImage("images/wall.png");
   int[] wall = walls.get(index);
   // get gap wall settings 
   int gapWallX = wall[0];
@@ -210,15 +213,15 @@ void wallDrawer(int index) {
   int gapWallWidth = wall[2];
   int gapWallHeight = wall[3];
   // draw actual walls
-  image(img, gapWallX, gapWallY+gapWallHeight, gapWallWidth, height-(gapWallY+gapWallHeight));
-  
-  /*rectMode(CORNER);
-  noStroke();
-  strokeCap(ROUND);
-  fill(wallColors);
-  rect(gapWallX, 0, gapWallWidth, gapWallY, 0, 0, 15, 15);
-  rect(gapWallX, gapWallY+gapWallHeight, gapWallWidth, height-(gapWallY+gapWallHeight), 15, 15, 0, 0);
-  coinAdder(index);*/
+  if(!(gapWallX > width) || !(gapWallX < 0)) {
+  //image(img, gapWallX, gapWallY+gapWallHeight, gapWallWidth, height-(gapWallY+gapWallHeight));
+  rectMode(CORNER);
+    noStroke();
+    strokeCap(ROUND);
+    fill(100, 70, 36);
+    rect(gapWallX, gapWallY+gapWallHeight, gapWallWidth, 30, 0);
+    coinAdder();
+  }
 }
 
 
@@ -227,7 +230,6 @@ void wallDrawer(int index) {
 void coinAdder() {
     //int[] wall = walls.get(index);
     int [] coin = {width, 0, wallWidth, 0, 0};
-    // {wall[0] + wallWidth/3, wall[3] - 40, wallWidth / 3, wallWidth /3}
     coins.add(coin); 
 }
 
@@ -244,11 +246,13 @@ void wallAdder() {
 /********* HANDLER METHODS *********/
 
 void coinHandler() {
+  
   for (int i = 0; i < walls.size(); i++) {
     coinRemover(i);
     coinMover(i);
     coinDrawer(i);
-    watchCoinCollision(i);
+    //watchCoinCollision(i);
+    
   }
 }
 
@@ -291,32 +295,27 @@ void wallRemover(int index) {
 
 /********* COLLISION METHODS *********/
 
-void watchCoinCollision(int index) {
-  // x, y, size
+/*void watchCoinCollision(int index) {
   int[] position = coordinates.get(index);
-  int[] coin = coins.get(index);
-  int coinScored = coin[4];
-  if(
-    
-    ((int)ballX+(ballSize/2) == position[0]) && 
-    ((int)ballY+(ballSize/2) == position[1]) ||
-    ((int)ballX+(ballSize/2) + 1 == position[0]) ||
-    ((int)ballX+(ballSize/2) + 1 == position[0]) ||
-    ((int)ballX+(ballSize/2) + 2 == position[0]) ||
-    ((int)ballX+(ballSize/2) + 2 == position[0]) &&
-    (coinScored == 0)
-    ) {
-      coinScored=1;
-      coin[4]=1;
-      score();
-    }
-    
-    if((dist(ballX+(ballSize/2), ballY+(ballSize/2), position[0], position[1]) < 50)  ){
-      coinScored=1;
-      coin[4]=1;
-      score();
+  float x1 = ballX + ballSize;
+  float y1 = ballY + ballSize;
+  float x2 = ballX;
+  float y2 = ballY;
+  float x3 = position[0];
+  float y3 = position[1];
+  float x4 = position[0] + position[2];
+  float y4 = position[1] + position[2];
+  
+  // calculate the distance to intersection point
+  float uA = ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1));
+  float uB = ((x2-x1)*(y1-y3) - (y2-y1)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1));
+
+  // if uA and uB are between 0-1, lines are colliding
+  if (uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1) {
+    star(position[0], position[1], 8, 25, 5, backgroundColor); 
+    score();
   }
-}
+}*/
 
 void watchWallCollision(int index) {
   int[] wall = walls.get(index);
@@ -325,12 +324,12 @@ void watchWallCollision(int index) {
   int gapWallY = wall[1];
   int gapWallWidth = wall[2];
   int gapWallHeight = wall[3];
-  int wallScored = wall[4];
+  //int wallScored = wall[4];
   int wallBottomX = gapWallX;
   int wallBottomY = gapWallY+gapWallHeight;
   int wallBottomWidth = gapWallWidth;
-  int wallBottomHeight = height-(gapWallY+gapWallHeight);
- 
+  int wallBottomHeight = height-gapWallHeight;
+  
   if (
     (ballX+(ballSize/2)>wallBottomX) &&
     (ballX-(ballSize/2)<wallBottomX+wallBottomWidth) &&
@@ -338,15 +337,23 @@ void watchWallCollision(int index) {
     (ballY-(ballSize/2)<wallBottomY+wallBottomHeight)
     ) {
     decreaseHealth();
-  }
-
-  if (ballX > gapWallX+(gapWallWidth/2) && wallScored==0) {
-    //wallScored=1;
-    //wall[4]=1;
-    //score();
-  }
+  } else if(
+            (ballY+ballSize == wallBottomY) &&
+            !(inRange(wallBottomX, wallBottomX+wallWidth, (int)ballX))
+           )
+           {
+            println("It worked");
+          }
+  
 }
 
+boolean inRange(int minValue, int maxValue, int value) {
+  if(value >= minValue && value <= maxValue) {
+    return true;
+  } else {
+    return false;
+  }
+}
 
 /********* GRAVITY RESPONDING METHODS *********/
 
@@ -444,11 +451,11 @@ void printScore() {
   text(score, height/2, 50);
 }
 
-void star(float x, float y, float radius1, float radius2, int npoints) {
+void star(float x, float y, float radius1, float radius2, int npoints, color fillColor) {
   float angle = TWO_PI / npoints;
   float halfAngle = angle/2.0;
   beginShape();
-  fill(255,255,51);
+  fill(fillColor);
   for (float a = 0; a < TWO_PI; a += angle) {
     float sx = x + cos(a) * radius2;
     float sy = y + sin(a) * radius2;
