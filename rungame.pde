@@ -9,7 +9,7 @@
 // 2: Game-over Screen 
 
 int gameScr = 0;
-
+Timer timer;
 // gameplay settings
 float gravity = .3;
 float airfriction = 0.00001;
@@ -17,10 +17,6 @@ float friction = 0.1;
 
 // scoring
 int score = 0;
-int maxHealth = 100;
-float health = 100;
-float healthDecrease = 1;
-int healthBarWidth = 60;
 
 // ball settings
 float ballX, ballY;
@@ -54,11 +50,12 @@ ArrayList<int[]> coordinates = new ArrayList<int[]>();
 /********* SETUP BLOCK *********/
 
 void setup() {
-  frameRate(60);
+  //frameRate(60);
   size(500, 500);
   // set the initial coordinates of the ball
   ballX=width/4;
   ballY=height/5;
+  timer = new Timer(90);
   smooth();
 }
 
@@ -71,6 +68,7 @@ void draw() {
     initScreen();
   } else if (gameScr == 1) { 
     gameScr();
+    timer.countDown();
   } else if (gameScr == 2) { 
     gameOverScreen();
   }
@@ -92,22 +90,24 @@ void gameScr() {
   //PImage bg = loadImage("images/background.jpg");
   //background(bg);
   background(153, 217, 234);
+  text(timer.getTime(),50,35);
+  if(timer.getTime() >= 0.00) {
+    watchRacketBounce();
   
-  watchRacketBounce();
+    applyGravity();
+    applyHorizontalSpeed();
+    keepInScreen();
   
-  applyGravity();
-  applyHorizontalSpeed();
-  keepInScreen();
-  
-  
-  wallAdder();
-  wallHandler();
-  coinAdder();
-  coinHandler();
-  drawRacket();
-  drawHealthBar();
-  drawBall();
-  printScore();
+    wallAdder();
+    wallHandler();
+    coinAdder();
+    coinHandler();
+    drawRacket();
+    drawBall();
+    printScore();
+  } else {
+    gameOver();
+  }
 }
 
 void gameOverScreen() {
@@ -149,7 +149,6 @@ void gameOver() {
 
 void restart() {
   score = 0;
-  health = maxHealth;
   ballX=width/4;
   ballY=height/5;
   lastAddTime = 0;
@@ -157,6 +156,7 @@ void restart() {
   coins.clear();
   coordinates.clear();
   gameScr = 1;
+  timer.setTime(90);
 }
 
 
@@ -187,22 +187,6 @@ void coinDrawer(int index) {
   }
 }
  //<>//
-
-void drawHealthBar() {
-  noStroke();
-  fill(189, 195, 199);
-  rectMode(CORNER);
-  rect(ballX-(healthBarWidth/2), ballY - 30, healthBarWidth, 5);
-  if (health > 60) {
-    fill(46, 204, 113);
-  } else if (health > 30) {
-    fill(230, 126, 34);
-  } else {
-    fill(231, 76, 60);
-  }
-  rectMode(CORNER);
-  rect(ballX-(healthBarWidth/2), ballY - 30, healthBarWidth*(health/maxHealth), 5);
-}
 
 void wallDrawer(int index) {
   PImage img = loadImage("images/wall.png");
@@ -319,6 +303,7 @@ void wallRemover(int index) {
 
 void watchWallCollision(int index) {
   int[] wall = walls.get(index);
+  boolean alreadyChecked = false;
   // get gap wall settings 
   int gapWallX = wall[0];
   int gapWallY = wall[1];
@@ -330,21 +315,16 @@ void watchWallCollision(int index) {
   int wallBottomWidth = gapWallWidth;
   int wallBottomHeight = height-gapWallHeight;
   
-  if (
-    (ballX+(ballSize/2)>wallBottomX) &&
-    (ballX-(ballSize/2)<wallBottomX+wallBottomWidth) &&
-    (ballY+(ballSize/2)>wallBottomY) &&
-    (ballY-(ballSize/2)<wallBottomY+wallBottomHeight)
-    ) {
-    decreaseHealth();
-  } else if(
-            (ballY+ballSize == wallBottomY) &&
-            !(inRange(wallBottomX, wallBottomX+wallWidth, (int)ballX))
-           )
-           {
-            println("It worked");
-          }
-  
+  if((inRange(wallBottomX, wallBottomX+wallWidth, (int)ballX)) && !alreadyChecked) {
+    //println("It worked");   
+    if (dist(0, ballY+ballSize, 0, wallBottomY) >= 0 || !(dist(0, ballY, 0, wallBottomY) >= wallBottomY)) {
+       //println("It worked");
+       makeBounceBottom(wallBottomX);
+       alreadyChecked = true;
+      }
+    }
+    
+ 
 }
 
 boolean inRange(int minValue, int maxValue, int value) {
@@ -435,13 +415,6 @@ void watchRacketBounce() {
 
 void score() {
   score++;
-}
-
-void decreaseHealth() {
-  health -= healthDecrease;
-  if (health <= 0) {
-    gameOver();
-  }
 }
 
 void printScore() {
