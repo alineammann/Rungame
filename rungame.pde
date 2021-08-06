@@ -43,7 +43,6 @@ int maxGapHeight = 360;
 int wallWidth = 150;
 color wallColors = color(44, 62, 80);
 color starColor = color(255,255,51);
-color backgroundColor = color(236, 240, 241);
 // This arraylist stores data of the gaps between the walls. Actuals walls are drawn accordingly.
 // [gapWallX, gapWallY, gapWallWidth, gapWallHeight, scored]
 ArrayList<int[]> walls = new ArrayList<int[]>();
@@ -129,7 +128,7 @@ void gameOverScreen() {
 }
 
 void initScreen() {
-  background(backgroundColor);
+  background(236, 240, 241);
   textAlign(CENTER);
   fill(52, 73, 94);
   textSize(70);
@@ -142,6 +141,7 @@ void gameScr() {
   //PImage bg = loadImage("images/background.jpg");
   //background(bg);
   background(153, 217, 234);
+  textSize(30);
   text(timer.getTime(),50,35);
   
   if(timer.getTime() >= 0.00) {
@@ -150,8 +150,8 @@ void gameScr() {
     applyHorizontalSpeed();
     keepInScreen();
   
-    wallAdder();
-    wallHandler();
+    adder();
+    handler();
     drawRacket();
     drawBall();
     
@@ -176,9 +176,10 @@ void drawRacket() {
 }
 
 void coinDrawer(int index) {
-  int[] coin = coins.get(index);
-  
-  star(coin[0], coin[3]-40, 8, 25, 5, starColor);
+  //int[] coin = coins.get(index);
+  //int x = coin[0];
+  //int y = coin[3];
+  //star(x, y, 8, 25, 5, starColor);
     //println(position[0] + "," + position[1] + "    " + (int)ballX + "," + (int)ballY);
   
 }
@@ -193,55 +194,60 @@ void wallDrawer(int index) {
   int gapWallHeight = wall[3];
   // draw actual walls
   
-    //image(img, gapWallX, gapWallHeight, gapWallWidth, height-gapWallHeight);
   rectMode(CORNER);
   noStroke();
   strokeCap(ROUND);
   fill(100, 70, 36);
   rect(gapWallX, gapWallHeight, gapWallWidth, 30, 0);
+  //rect(gapWallX, gapWallHeight, gapWallWidth, height-(gapWallHeight), 0);
+  //image(img, gapWallX, gapWallHeight, gapWallWidth, height-gapWallHeight);
+  int[] coin = coins.get(index);
+  int x = coin[0];
+  int y = coin[3];
+  star(x, y, 8, 25, 5, starColor);
+    
   
 }
 
 
 /********* ADDING METHODS *********/
 
-void coinAdder(int first, int second, int third, int fourth, int fifth) {
-    int[] coin = {first+(wallWidth/2), second, third, fourth-40, fifth};
-    coins.add(coin);
-    
-}
 
-void wallAdder() {
+void adder() {
   if (millis()-lastAddTime > wallInterval) {
      randHeight = round(random(minGapHeight, maxGapHeight));
     // {gapWallX, gapWallY, gapWallWidth, gapWallHeight, scored}
     int[] randWall = {width, 0, wallWidth, randHeight, 0};
+    
     walls.add(randWall);
+    fillCoinArray(randWall[0], randWall[1], randWall[2], randWall[3], randWall[4]);
     lastAddTime = millis();
-    coinAdder(randWall[0], randWall[1], randWall[2], randWall[3], randWall[4]);
   }
+}
+
+void fillCoinArray(int first, int second, int third, int fourth, int fifth) {
+    first += wallWidth/2;
+    fourth -= 40;
+    int[] coin = {first, second, third, fourth, fifth};
+    coins.add(coin);
+    
 }
 
 /********* HANDLER METHODS *********/
 
-void coinHandler(int i) {
-   
-  
-}
 
-void wallHandler() {
+void handler() {
   for (int i = 0; i < walls.size(); i++) {
     wallRemover(i);
-    wallMover(i);
-    
     coinRemover(i);
+    
+    wallMover(i);
     coinMover(i);
     
     wallDrawer(i);
     coinDrawer(i);
+    
     watchWallCollision(i);
-    
-    
     watchCoinCollision(i);
   }
 }
@@ -280,40 +286,39 @@ void watchCoinCollision(int index) {
   int[] coin = coins.get(index);
   int starScored = coin[4];
   float halfBall = ballSize/2;
-  if(inRange(coin[0], coin[0]+wallWidth/3, ballX) && starScored == 0) {
-    if (inRange(coin[1]-halfBall, coin[1]+(wallWidth/3)+halfBall, ballY+halfBall)) {
+  if(starScored == 0 && inRange(coin[0] - halfBall, coin[0]+wallWidth/3 + halfBall, ballX)) {
+    if (inRange(coin[3]-halfBall, coin[3]+(wallWidth/3)+halfBall, ballY+halfBall)) {
       score();
       starScored = 1;
       coin[4] = 1;
     }
   }
+  
   if(starScored != 0) {
-    removeStar(coin[0], coin[3]-40, 8, 25, 5, backgroundColor);
+    removeStar(coin[0], coin[3], 8, 25, 5, color(153, 217, 234));
   }
+  
 }
 
 void watchWallCollision(int index) {
   int[] wall = walls.get(index);
-  boolean alreadyChecked = false;
   // get gap wall settings 
   int gapWallX = wall[0];
-  int gapWallY = wall[1];
   int gapWallWidth = wall[2];
   int gapWallHeight = wall[3];
   int wallScored = wall[4];
-  int wallBottomX = gapWallX;
-  int wallBottomY = gapWallHeight;
   int wallBottomWidth = gapWallWidth;
   int wallBottomHeight = height-gapWallHeight;
   
-  if((inRange(wallBottomX, wallBottomX+wallWidth, ballX)) && inRange(0, height -  wallBottomHeight, ballY+ballSize) && wallScored == 0) {
-    if (dist(0, ballY+ballSize, 0, wallBottomY-30) <= ballY + ballSize && !(ballY >= wallBottomY)) {
-       //ballY++;
-       //makeBounceBottom(/*(gapWallHeight - height)* -1*/ ballY+ballSize);
-       wallScored=1;
-       wall[4]=1;
-      }
+  
+  if ((ballX+(ballSize/2) > gapWallX && (ballX-(ballSize/2) < gapWallX+(wallBottomWidth/2)))) {
+    if (dist(ballX, ballY, ballX, height-wallBottomHeight)<=(ballSize/2)) {
+        wallScored=1;
+        wall[4]=1;
+        makeBounceBottom(height-wallBottomHeight);
     }
+  }
+  
 }
 
 boolean inRange(float minValue, float maxValue, float value) {
@@ -386,6 +391,7 @@ void keepInScreen() {
 
 void watchRacketBounce() {
   float overhead = mouseY - pmouseY;
+  
   if ((ballX+(ballSize/2) > mouseX-(racketWidth/2)) && (ballX-(ballSize/2) < mouseX+(racketWidth/2))) {
     if (dist(ballX, ballY, ballX, mouseY)<=(ballSize/2)+abs(overhead)) {
       makeBounceBottom(mouseY);
@@ -409,8 +415,8 @@ void score() {
 void printScore() {
   textAlign(CENTER);
   fill(0);
-  textSize(30); 
-  text(score, height/2, 50);
+  textSize(30);
+  text(score, width/2, 35);
 }
 
 void star(float x, float y, float radius1, float radius2, int npoints, color fillColor) {
@@ -430,7 +436,7 @@ void star(float x, float y, float radius1, float radius2, int npoints, color fil
 }
 
 void removeStar(float x, float y, float r, float r2, int p, color c) {
-  star(x, y, r, r2, p, c); 
+  star(x, y, r, r2, p, c);
 }
 
 /*************** ADDED METHODS ***************/
