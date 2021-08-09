@@ -175,17 +175,9 @@ void drawRacket() {
   rect(mouseX, mouseY, racketWidth, racketHeight, 5);
 }
 
-void coinDrawer(int index) {
-  //int[] coin = coins.get(index);
-  //int x = coin[0];
-  //int y = coin[3];
-  //star(x, y, 8, 25, 5, starColor);
-    //println(position[0] + "," + position[1] + "    " + (int)ballX + "," + (int)ballY);
-  
-}
 
 
-void wallDrawer(int index) {
+void drawer(int index) {
   PImage img = loadImage("images/wall.png");
   int[] wall = walls.get(index);
   // get gap wall settings 
@@ -199,12 +191,11 @@ void wallDrawer(int index) {
   strokeCap(ROUND);
   fill(100, 70, 36);
   rect(gapWallX, gapWallHeight, gapWallWidth, 30, 0);
-  //rect(gapWallX, gapWallHeight, gapWallWidth, height-(gapWallHeight), 0);
   //image(img, gapWallX, gapWallHeight, gapWallWidth, height-gapWallHeight);
   int[] coin = coins.get(index);
   int x = coin[0];
   int y = coin[3];
-  star(x, y, 8, 25, 5, starColor);
+  star(x+(wallWidth/2), y, 8, 25, 5, starColor);
     
   
 }
@@ -220,18 +211,17 @@ void adder() {
     int[] randWall = {width, 0, wallWidth, randHeight, 0};
     
     walls.add(randWall);
-    fillCoinArray(randWall[0], randWall[1], randWall[2], randWall[3], randWall[4]);
     lastAddTime = millis();
+    fillCoinArray(randWall[0], randWall[1], randWall[2], randWall[3], randWall[4]);
   }
 }
 
 void fillCoinArray(int first, int second, int third, int fourth, int fifth) {
-    first += wallWidth/2;
     fourth -= 40;
     int[] coin = {first, second, third, fourth, fifth};
     coins.add(coin);
-    
 }
+
 
 /********* HANDLER METHODS *********/
 
@@ -244,8 +234,7 @@ void handler() {
     wallMover(i);
     coinMover(i);
     
-    wallDrawer(i);
-    coinDrawer(i);
+    drawer(i);
     
     watchWallCollision(i);
     watchCoinCollision(i);
@@ -286,16 +275,16 @@ void watchCoinCollision(int index) {
   int[] coin = coins.get(index);
   int starScored = coin[4];
   float halfBall = ballSize/2;
-  if(starScored == 0 && inRange(coin[0] - halfBall, coin[0]+wallWidth/3 + halfBall, ballX)) {
+  if(starScored == 0 && inRange(coin[0] - halfBall+(wallWidth/2), coin[0]+wallWidth/3 + halfBall+(wallWidth/2), ballX)) {
     if (inRange(coin[3]-halfBall, coin[3]+(wallWidth/3)+halfBall, ballY+halfBall)) {
-      score();
+      increaseScore();
       starScored = 1;
       coin[4] = 1;
     }
   }
   
   if(starScored != 0) {
-    removeStar(coin[0], coin[3], 8, 25, 5, color(153, 217, 234));
+    removeStar(coin[0]+(wallWidth/2), coin[3], 8, 25, 5, color(153, 217, 234));
   }
   
 }
@@ -408,7 +397,7 @@ void watchRacketBounce() {
 
 /********* OTHER METHODS *********/
 
-void score() {
+void increaseScore() {
   score++;
 }
 
