@@ -3,20 +3,17 @@
 // We control which screen is active by settings / updating
 // gameScr variable. We display the correct screen according
 // to the value of this variable.
-// 
-// 0: Initial Screen
-// 1: Game Screen
-// 2: Game-over Screen 
 
-int gameScr = 0;
-Timer timer;
 // gameplay settings
+int gameScr = 0;
 float gravity = .3;
 float airfriction = 0.00001;
 float friction = 0.1;
+Timer timer;
 
 // scoring
 int score = 0;
+color starColor = color(255,255,51);
 
 // ball settings
 float ballX, ballY;
@@ -34,25 +31,24 @@ float racketHeight = 10;
 int randHeight;
 
 // wall settings
+int wallWidth = 150;
+int minGapHeight = 170;
+int maxGapHeight = 360;
 int wallSpeed = 5;
 int wallInterval = 1000;
 float lastAddTime = 0;
-int minGapHeight = 170;
-int maxGapHeight = 360;
-
-int wallWidth = 150;
 color wallColors = color(44, 62, 80);
-color starColor = color(255,255,51);
-// This arraylist stores data of the gaps between the walls. Actuals walls are drawn accordingly.
-// [gapWallX, gapWallY, gapWallWidth, gapWallHeight, scored]
+
+// ArrayLists 
 ArrayList<int[]> walls = new ArrayList<int[]>();
 ArrayList<int[]> coins = new ArrayList<int[]>();
+ArrayList<Integer> scores = new ArrayList<Integer>();
 
 /********* SETUP BLOCK *********/
 
 void setup() {
   //frameRate(60);
-  size(700, 500);
+  size(800 , 600);
   // set the initial coordinates of the ball
   ballX=width/4;
   ballY=height/5;
@@ -68,13 +64,12 @@ void draw() {
   if (gameScr == 0) { 
     initScreen();
   } else if (gameScr == 1) { 
-    gameScr();
+    showGameScreen();
     timer.countDown();
   } else if (gameScr == 2) { 
     gameOverScreen();
   }
 }
-
 
 
 /********* INPUTS *********/
@@ -98,6 +93,7 @@ void startGame() {
   gameScr=1;
 }
 void gameOver() {
+  scores.add(score);
   gameScr=2;
 }
 
@@ -124,6 +120,8 @@ void gameOverScreen() {
   textSize(130);
   text(score, width/2, height/2);
   textSize(15);
+  text("Current Highscore:" + getHighScore(), width/2, height/2 + 60);
+  textSize(15);
   text("Click to Restart", width/2, height-30);
 }
 
@@ -137,7 +135,7 @@ void initScreen() {
   text("Click to start", width/2, height-30);
 }
 
-void gameScr() {
+void showGameScreen() {
   //PImage bg = loadImage("images/background.jpg");
   //background(bg);
   background(153, 217, 234);
@@ -176,28 +174,32 @@ void drawRacket() {
 }
 
 
-
 void drawer(int index) {
-  PImage img = loadImage("images/wall.png");
+  //Load image from Folder
+  //PImage wall = loadImage("images/wall.png");
+  //PImage ball = loadImage("images/ball.png");
+  
+  // get gap wall and coin settings
   int[] wall = walls.get(index);
-  // get gap wall settings 
+  int[] coin = coins.get(index);
   int gapWallX = wall[0];
   int gapWallWidth = wall[2];
   int gapWallHeight = wall[3];
-  // draw actual walls
+  int ballX = coin[0];
+  int ballY = coin[3];
+  // draw elements
   
   rectMode(CORNER);
   noStroke();
   strokeCap(ROUND);
   fill(100, 70, 36);
   rect(gapWallX, gapWallHeight, gapWallWidth, 30, 0);
-  //image(img, gapWallX, gapWallHeight, gapWallWidth, height-gapWallHeight);
-  int[] coin = coins.get(index);
-  int x = coin[0];
-  int y = coin[3];
-  star(x+(wallWidth/2), y, 8, 25, 5, starColor);
-    
+  star(ballX+(wallWidth/2), ballY, 8, 25, 5, starColor);
   
+  
+  //Image replacement for wall and star
+  //image(wall, gapWallX, gapWallHeight, gapWallWidth, height-gapWallHeight);
+  //image(ball, ballX+(wallWidth/2), ballY, wallWidth/3);
 }
 
 
@@ -295,15 +297,12 @@ void watchWallCollision(int index) {
   int gapWallX = wall[0];
   int gapWallWidth = wall[2];
   int gapWallHeight = wall[3];
-  int wallScored = wall[4];
   int wallBottomWidth = gapWallWidth;
   int wallBottomHeight = height-gapWallHeight;
   
   
   if ((ballX+(ballSize/2) > gapWallX && (ballX-(ballSize/2) < gapWallX+(wallBottomWidth/2)))) {
     if (dist(ballX, ballY, ballX, height-wallBottomHeight)<=(ballSize/2)) {
-        wallScored=1;
-        wall[4]=1;
         makeBounceBottom(height-wallBottomHeight);
     }
   }
@@ -381,7 +380,7 @@ void keepInScreen() {
 void watchRacketBounce() {
   float overhead = mouseY - pmouseY;
   
-  if ((ballX+(ballSize/2) > mouseX-(racketWidth/2)) && (ballX-(ballSize/2) < mouseX+(racketWidth/2))) {
+  if ((ballX+(ballSize/2) > mouseX-(racketWidth/2)) && (ballX+(ballSize/2) < mouseX+(racketWidth/2))) {
     if (dist(ballX, ballY, ballX, mouseY)<=(ballSize/2)+abs(overhead)) {
       makeBounceBottom(mouseY);
       ballSpeedHorizon = (ballX - mouseX)/10;
@@ -428,12 +427,13 @@ void removeStar(float x, float y, float r, float r2, int p, color c) {
   star(x, y, r, r2, p, c);
 }
 
-/*************** ADDED METHODS ***************/
-
-// star()
-// coin*()
-// restart()
-// watchCoinCollision()
-// coordinates<> / coins<>
-// wallAdder()
-// Timer Class
+int getHighScore() {
+  int max = scores.get(0);
+  for(int i = 0; i < scores.size(); i++) {
+    int current = scores.get(i);
+    if(current > max) {
+      max = current;
+    }
+  }
+  return max;
+}
