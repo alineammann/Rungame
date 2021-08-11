@@ -20,12 +20,12 @@ float ballX, ballY;
 float ballSpeedVert = 0;
 float ballSpeedHorizon = 0;
 float ballSize = 30;
-color ballColor = color(255, 215, 0);
+color ballColor = color(255,99,71);
  
 // racket settings
-color racketColor = color(0);
 float racketWidth = 100;
 float racketHeight = 10;
+color racketColor = color(255,255,240); 
  
 //Height for coins & walls
 int randHeight;
@@ -51,7 +51,7 @@ void setup() {
    // set the initial coordinates of the ball
    ballX = screenWidth / 4;
    ballY = screenHeight / 5;
-   createTimer(90);
+   createTimer(60);
    smooth();
 }
 
@@ -104,7 +104,7 @@ void restart() {
    walls.clear();
    coins.clear();
    gameScr = 1;
-   setTime(90);
+   setTime(60);
 }
 
 
@@ -119,7 +119,7 @@ void gameOverScreen() {
    textSize(130);
    text(score , screenWidth / 2, screenHeight / 2);
    textSize(15);
-  text("Current Highscore:" + getHighScore(), width/2, height/2 + 60);
+  text("Current Highscore: " + getHighScore(), width/2, height/2 + 60);
    textSize(15);
    text("Click to restart", screenWidth / 2, screenHeight - 30);
 }
@@ -130,14 +130,14 @@ void initScreen() {
    textAlign(CENTER);
    fill(52, 73, 94);
    textSize(70);
-   text("Flappy Pong", screenWidth / 2, screenHeight / 2);
+   text("Rungame", screenWidth / 2, screenHeight / 2);
    textSize(15); 
    text("Click to start", screenWidth / 2, screenHeight - 100);
 }
 
 
 void showGameScreen() {
-   background(153, 217, 234);
+   background(44, 62, 80);
    textSize(30);
    text(getTime(),50,35);
    
@@ -166,7 +166,7 @@ void drawBall() {
 }
 
 void drawRacket() {
-   fill(racketColor);
+   fill(255,255,240);
    rectMode(CENTER);
    rect(mouseX, mouseY, racketWidth, racketHeight, 5);
 }
@@ -284,7 +284,7 @@ void watchCoinCollision(int index) {
   }
   
   if(starScored != 0) {
-    removeStar(coin[0]+(wallWidth/2), coin[3], 8, 25, 5, color(153, 217, 234));
+    removeStar(coin[0]+(wallWidth/2), coin[3], 8, 25, 5, color(44, 62, 80));
   }
   
 }
@@ -295,18 +295,15 @@ void watchWallCollision(int index) {
    int gapWallX = wall[0];
    int gapWallWidth = wall[2];
    int gapWallHeight = wall[3];
-   int wallScored = wall[4];
    int wallBottomWidth = gapWallWidth;
    int wallBottomHeight = height-gapWallHeight;
    
    
-   if ((ballX+(ballSize/2) > gapWallX && (ballX-(ballSize/2) < gapWallX+(wallBottomWidth/2)))) {
-      if (dist(ballX, ballY, ballX, height-wallBottomHeight)<=(ballSize/2)) {
-         wallScored=1;
-         wall[4]=1;
-         makeBounceBottom(height-wallBottomHeight);
-      }
-   }
+   if ((ballX+(ballSize/2) > gapWallX && (ballX-(ballSize/2) < gapWallX+(wallBottomWidth)))) {
+    if (dist(ballX, ballY, ballX, height-wallBottomHeight)<=(ballSize/2)) {
+        makeBounceBottom(height-wallBottomHeight);
+    }
+  }
    
 }
 
@@ -400,7 +397,7 @@ void increaseScore() {
 
 void printScore() {
    textAlign(CENTER);
-   fill(0);
+   fill(color(255,255,240));
    textSize(30); 
    text(score, screenWidth / 2, 50);
 }
