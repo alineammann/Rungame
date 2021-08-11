@@ -3,11 +3,11 @@
 // We control which screen is active by settings / updating
 // gameScr variable. We display the correct screen according
 // to the value of this variable.
-//
+
 // gameplay settings
 int gameScr = 0;
 float gravity = .3;
-float airfriction = 0.00001;
+float airfriction = 0.00002;
 float friction = 0.1;
 Timer timer;
 
@@ -20,12 +20,12 @@ float ballX, ballY;
 float ballSpeedVert = 0;
 float ballSpeedHorizon = 0;
 float ballSize = 30;
-color ballColor = color(255, 215, 0);
+color ballColor = color(255,99,71);
 
 // racket settings
-color racketColor = color(0);
 float racketWidth = 100;
 float racketHeight = 10;
+color racketColor = color(255,255,240);
 
 //Height for coins & walls
 int randHeight;
@@ -52,7 +52,7 @@ void setup() {
   // set the initial coordinates of the ball
   ballX=width/4;
   ballY=height/5;
-  timer = new Timer(90);
+  timer = new Timer(60);
   smooth();
 }
 
@@ -105,7 +105,7 @@ void restart() {
   walls.clear();
   coins.clear();
   gameScr = 1;
-  timer.setTime(90);
+  timer.setTime(60);
 }
 
 
@@ -130,7 +130,7 @@ void initScreen() {
   textAlign(CENTER);
   fill(52, 73, 94);
   textSize(70);
-  text("Flappy Pong", width/2, height/2);
+  text("Rungame", width/2, height/2);
   textSize(15); 
   text("Click to start", width/2, height-30);
 }
@@ -138,7 +138,7 @@ void initScreen() {
 void showGameScreen() {
   //PImage bg = loadImage("images/background.jpg");
   //background(bg);
-  background(153, 217, 234);
+  background(44, 62, 80);
   textSize(30);
   text(timer.getTime(),50,35);
   
@@ -168,7 +168,7 @@ void drawBall() {
 }
 
 void drawRacket() {
-  fill(racketColor);
+  fill(255,255,240);
   rectMode(CENTER);
   rect(mouseX, mouseY, racketWidth, racketHeight, 5);
 }
@@ -192,8 +192,8 @@ void drawer(int index) {
   rectMode(CORNER);
   noStroke();
   strokeCap(ROUND);
-  fill(100, 70, 36);
-  rect(gapWallX, gapWallHeight, gapWallWidth, 30, 0);
+  fill(255,255,240);
+  rect(gapWallX, gapWallHeight, gapWallWidth, 30, 15);
   star(ballX+(wallWidth/2), ballY, 8, 25, 5, starColor);
   
   
@@ -286,7 +286,7 @@ void watchCoinCollision(int index) {
   }
   
   if(starScored != 0) {
-    removeStar(coin[0]+(wallWidth/2), coin[3], 8, 25, 5, color(153, 217, 234));
+    removeStar(coin[0]+(wallWidth/2), coin[3], 8, 25, 5, color(44, 62, 80));
   }
   
 }
@@ -301,7 +301,7 @@ void watchWallCollision(int index) {
   int wallBottomHeight = height-gapWallHeight;
   
   
-  if ((ballX+(ballSize/2) > gapWallX && (ballX-(ballSize/2) < gapWallX+(wallBottomWidth/2)))) {
+  if ((ballX+(ballSize/2) > gapWallX && (ballX-(ballSize/2) < gapWallX+(wallBottomWidth)))) {
     if (dist(ballX, ballY, ballX, height-wallBottomHeight)<=(ballSize/2)) {
         makeBounceBottom(height-wallBottomHeight);
     }
@@ -402,7 +402,7 @@ void increaseScore() {
 
 void printScore() {
   textAlign(CENTER);
-  fill(0);
+  fill(color(255,255,240));
   textSize(30);
   text(score, width/2, 35);
 }
