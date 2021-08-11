@@ -3,7 +3,7 @@
 // We control which screen is active by settings / updating
 // gameScr variable. We display the correct screen according
 // to the value of this variable.
-
+//
 // gameplay settings
 int gameScr = 0;
 float gravity = .3;
